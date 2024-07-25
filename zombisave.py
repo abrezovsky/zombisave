@@ -7,7 +7,7 @@ import sys
 import time
 import zipfile as zip
 
-# TODO: Argparse (playstyle override?, extension?), readme.md
+# TODO: Argparse (playstyle override?, extension?), readme.md, use logging?
 # Does not verify saves, ALL folders in save directory other than FOLDER_NAME are backup candidates 
 # Only catching exceptions the first time a type of os operation is attempted, shouldn't be an issue
 
@@ -79,6 +79,7 @@ try:
     playstyles = os.listdir(SAVE_ROOT_DIR)
 except PermissionError:
     print("ERROR: Do not have permissions to access save directory!")
+    sys.exit(1)
 
 # Error out if there are no folders
 if playstyles == []:
@@ -121,7 +122,7 @@ except PermissionError:
 
 # Set default backup suffix
 SUFFIX_SEPARATOR = '_'     # Backup file name separator from addon
-SUFFIX_PREFIX = "bak"      # Backup file name addon prefix
+SUFFIX_BEGIN = "bak"      # Backup file name addon prefix
 suffix_extension = ".zip"  # Backup file name addon extension
 backup_num = 0             # Current backup number
 
@@ -134,7 +135,7 @@ for backup in os.listdir(BACKUP_PATH):
 
         # Determine existing backup's number, set initial backup number to one higher if it is <= the current initial
         before, sep, after = backup.rpartition(SUFFIX_SEPARATOR)
-        after = after.removeprefix(SUFFIX_PREFIX).removesuffix(suffix_extension)
+        after = after.removeprefix(SUFFIX_BEGIN).removesuffix(suffix_extension)
         if int(after) >= backup_num:
             backup_num = int(after) + 1
 
@@ -173,12 +174,12 @@ while current_mod != last_mod:
     if not METHOD:
         suffix_extension = ""
 
-    backup_name = f"{latest_save}{SUFFIX_SEPARATOR}{SUFFIX_PREFIX}{backup_num}{suffix_extension}"
+    backup_name = f"{latest_save}{SUFFIX_SEPARATOR}{SUFFIX_BEGIN}{backup_num}{suffix_extension}"
 
     # If file name already exists, increment the number (should only occur if user deletes files manually)
     while os.path.isfile(pathlib.Path(BACKUP_PATH, backup_name)): 
         backup_num += 1
-        backup_name = f"{latest_save}{SUFFIX_SEPARATOR}{SUFFIX_PREFIX}{backup_num}{suffix_extension}"
+        backup_name = f"{latest_save}{SUFFIX_SEPARATOR}{SUFFIX_BEGIN}{backup_num}{suffix_extension}"
     
     if FOLDER_NAME == "":
         print(f"Creating backup \"{latest_playstyle}/{backup_name}\" ... ", end='')
